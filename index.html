@@ -357,26 +357,36 @@
         }
 
         function generateWhatsAppUrl(phone, invoiceId, clientName, items, totalAmount, dateStr) {
-            const cleanPhone = formatPhoneNumber(phone);
-            
-            let message = `🍯 *MielQa - Votre Facture* 🍯\n`;
-            if (invoiceId) message += `*N° Facture:* ${invoiceId}\n`;
-            if (dateStr) message += `*Date:* ${dateStr}\n`;
-            if (clientName && clientName !== 'Client de passage') message += `*Client:* ${clientName}\n`;
-            
-            message += `\n*Détail de la commande :*\n`;
-            items.forEach(item => {
-                message += `• ${item.name} x${item.qty} : ${item.total} DH\n`;
-            });
-            
-            message += `\n*Total à payer : ${totalAmount} DH*\n\nMerci de votre confiance ! ✨`;
+    const cleanPhone = formatPhoneNumber(phone);
+    
+    let message = `MIELQA – La douceur dorée\n\n`;
+    message += `🧾 RÉCAPITULATIF DE VOTRE ACHAT\n\n`;
+    
+    if (dateStr) message += `📅 Date : ${dateStr}\n`;
+    if (clientName && clientName !== 'Client de passage') {
+        message += `👤 Client(e) : ${clientName}\n`;
+    }
+    
+    message += `\n━━━━━━━━━━━━━━\n\n`;
+    
+    items.forEach(item => {
+        message += `- ${item.name} × ${item.qty} : ${item.total} DH\n`;
+    });
+    
+    message += `\n━━━━━━━━━━━━━━\n\n`;
+    message += `💰 TOTAL : ${totalAmount} DH\n\n`;
+    message += `Merci pour votre visite et votre confiance !\n\n`;
+    message += `📱 Instagram : https://www.instagram.com/honeyspoon.ma?dlrf=Nzd2YWtib2Y4MTNs&utm_source=qr\n`;
+    message += `🌐 Site web : https://honeyspoon.ma/products\n\n`;
+    message += `MIELQA – Le plaisir du miel naturel.`;
 
-            const encodedMsg = encodeURIComponent(message);
-            
-            return cleanPhone 
-                ? `https://wa.me/${cleanPhone}?text=${encodedMsg}`
-                : `https://wa.me/?text=${encodedMsg}`;
-        }
+    const encodedMsg = encodeURIComponent(message);
+    
+    return cleanPhone 
+        ? `https://wa.me/${cleanPhone}?text=${encodedMsg}`
+        : `https://wa.me/?text=${encodedMsg}`;
+}
+
 
         function sendCurrentInvoiceViaWhatsApp() {
             const totalCount = Object.values(quantities).reduce((a, b) => a + b, 0);
