@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculatrice de Facture - MielQa</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-amber-50 text-slate-800 min-h-screen py-6 px-3 sm:px-6">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+
+        <!-- En-tête -->
+        <header class="bg-gradient-to-r from-amber-600 to-yellow-600 text-white p-6 rounded-2xl shadow-lg flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-wide">MielQa <span class="text-xs bg-amber-800 px-2 py-1 rounded-full text-amber-200">Facturation</span></h1>
+                <p class="text-amber-100 text-sm mt-1">Calculatrice & Gestionnaire d'historique des ventes</p>
+            </div>
+            <div class="text-right bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/20">
+                <span class="text-xs block text-amber-200">Date actuelle</span>
+                <span id="currentDate" class="font-semibold text-sm">--/--/----</span>
+            </div>
+        </header>
+
+        <!-- Grille Principale -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Section Sélection des Produits (2 colonnes sur grand écran) -->
+            <div class="lg:col-span-2 space-y-4">
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-amber-100">
+                    <h2 class="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-cart-shopping text-amber-600"></i> Produits MielQa
+                    </h2>
+
+                    <!-- Liste des produits -->
+                    <div id="productsList" class="space-y-3">
+                        <!-- Généré par JavaScript -->
+                    </div>
+
+                    <!-- Informations Client -->
+                    <div class="mt-6 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Nom du Client (Optionnel)</label>
+                            <input type="text" id="clientName" placeholder="Ex: Mohamed Amine" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Téléphone WhatsApp</label>
+                            <input type="tel" id="clientPhone" placeholder="Ex: 0612345678" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Récapitulatif et Actions -->
+            <div class="space-y-4">
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-amber-100 sticky top-6">
+                    <h2 class="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-receipt text-amber-600"></i> Récapitulatif
+                    </h2>
+
+                    <!-- Liste rapide des articles sélectionnés -->
+                    <div id="summaryItems" class="space-y-2 text-sm max-h-48 overflow-y-auto mb-4 divide-y divide-slate-100">
+                        <p class="text-slate-400 text-center py-4 text-xs italic">Aucun produit sélectionné</p>
+                    </div>
+
+                    <!-- Total Général -->
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 space-y-2">
+                        <div class="flex justify-between text-xs text-slate-600">
+                            <span>Nombre d'articles :</span>
+                            <span id="totalItemsCount" class="font-bold">0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-lg font-extrabold text-amber-900 pt-2 border-t border-amber-200">
+                            <span>Total :</span>
+                            <span class="text-2xl text-amber-700" id="totalAmount">0 <span class="text-xs">DH</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="mt-5 space-y-2">
+                        <button onclick="saveInvoice()" class="w-full bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Enregistrer la Facture
+                        </button>
+                        
+                        <!-- NOUVEAU BOUTON : ENVOI DIRECT WHATSAPP -->
+                        <button onclick="sendCurrentInvoiceViaWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-brands fa-whatsapp text-lg"></i> Envoyer via WhatsApp
+                        </button>
+
+                        <button onclick="resetCalculator()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2 px-4 rounded-xl transition text-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-rotate-left"></i> Réinitialiser
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Section Historique des Factures -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-amber-100">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <h2 class="text-lg font-bold text-amber-900 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-amber-600"></i> Historique des Factures
+                </h2>
+                <button onclick="clearHistory()" class="text-xs text-red-600 hover:text-red-800 font-semibold flex items-center gap-1 self-start sm:self-auto px-2 py-1 bg-red-50 rounded-lg hover:bg-red-100 transition">
+                    <i class="fa-solid fa-trash-can"></i> Vider l'historique
+                </button> 
+
+            </div>
+
+            <!-- Table/Liste de l'historique -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase bg-slate-50">
+                            <th class="p-3 rounded-l-lg">N° Facture</th>
+                            <th class="p-3">Date & Heure</th>
+                            <th class="p-3">Client</th>
+                            <th class="p-3">Tél</th>
+                            <th class="p-3">Détails Produits</th>
+                            <th class="p-3">Total</th>
+                            <th class="p-3 text-right rounded-r-lg">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody" class="divide-y divide-slate-100">
+                        <!-- Injecté par JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <p id="emptyHistoryMsg" class="text-center py-8 text-slate-400 text-sm hidden">
+                Aucune facture dans l'historique pour le moment.
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Modal d'impression / Aperçu -->
+    <div id="printModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative space-y-4">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            
+            <div id="printableContent" class="space-y-4 p-2">
+                <div class="text-center border-b pb-3">
+                    <h2 class="text-2xl font-extrabold text-amber-700">MielQa</h2>
+                    <p class="text-xs text-slate-500">La cuillère de plaisir</p>
+                    <p id="modalInvNum" class="text-xs font-bold text-slate-700 mt-2">Facture #---</p>
+                    <p id="modalInvDate" class="text-xs text-slate-400">--/--/---- --:--</p>
+                </div>
+
+                <div id="modalClientInfo" class="text-xs text-slate-600 border-b pb-2 hidden">
+                    <p><strong>Client:</strong> <span id="modalClientName">-</span></p>
+                    <p><strong>Tél:</strong> <span id="modalClientPhone">-</span></p>
+                </div>
+
+                <div class="space-y-2 text-xs">
+                    <div class="font-bold border-b pb-1 flex justify-between text-slate-500">
+                        <span>Produit</span>
+                        <span>Qte x Prix = Total</span>
+                    </div>
+                    <div id="modalItemsList" class="space-y-1">
+                        <!-- Produits -->
+                    </div>
+                </div>
+
+                <div class="border-t pt-2 flex justify-between items-center text-base font-bold text-slate-800">
+                    <span>Total à payer :</span>
+                    <span id="modalTotalAmount" class="text-amber-700">0 DH</span>
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="window.print()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-3 rounded-xl text-sm transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-print"></i> Imprimer
+                </button>
+                <button id="modalWhatsappBtn" onclick="" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3 rounded-xl text-sm transition flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </button>
+                <button onclick="closeModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2 px-3 rounded-xl text-sm transition">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Styles CSS pour l'impression -->
+    <style>
+        @media print {
+            @page {
+                size: 10cm 10cm;
+                margin: 0.5cm;
+            }
+
+            body, html {
+                background: white !important;
+                width: 10cm !important;
+                height: 10cm !important;
+                overflow: hidden !important;
+            }
+
+            body * {
+                visibility: hidden;
+            }
+
+            #printModal, #printModal * {
+                visibility: visible;
+            }
+
+            #printModal {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 9cm !important;
+                max-height: 9cm !important;
+                background: white !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            #printModal button {
+                display: none !important;
+            }
+        }
+    </style>
+
+    <!-- Script JavaScript -->
+<script>
+        const PRODUCTS = [
+            { id: 1, name: "Miel Eucalyptus", price: 110, oldPrice: 149, icon: "fa-jar-wheat" },
+            { id: 2, name: "Miel aux herbes", price: 115, oldPrice: 149, icon: "fa-leaf" },
+            { id: 3, name: "Miel Dghmous", price: 140, oldPrice: 199, icon: "fa-cubes-stacked" },
+            { id: 4, name: "Pack 3 Saveurs", price: 350, oldPrice: 429, icon: "fa-box-open", badge: "PROMO" },
+            { id: 5, name: "Présentoir", price: 49, oldPrice: null, icon: "fa-store" }
+        ];
+
+        let quantities = {};
+        PRODUCTS.forEach(p => quantities[p.id] = 0);
+
+        const STORAGE_KEY = 'mielqa_invoices_history';
+
+        window.onload = function() {
+            const now = new Date();
+            document.getElementById('currentDate').innerText = now.toLocaleDateString('fr-FR');
+            
+            renderProducts();
+            updateTotals();
+            renderHistory();
+        };
+
+        function renderProducts() {
+            const container = document.getElementById('productsList');
+            container.innerHTML = '';
+
+            PRODUCTS.forEach(p => {
+                const oldPriceHTML = p.oldPrice ? `<span class="text-xs text-slate-400 line-through mr-1">${p.oldPrice} DH</span>` : '';
+                const badgeHTML = p.badge ? `<span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded ml-2">${p.badge}</span>` : '';
+
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-3 bg-slate-50 hover:bg-amber-50/50 rounded-xl border border-slate-200/80 transition";
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-lg">
+                            <i class="fa-solid ${p.icon}"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm text-slate-800">${p.name} ${badgeHTML}</h3>
+                            <div class="text-xs font-semibold text-amber-700">
+                                ${oldPriceHTML}<span>${p.price} DH</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="changeQty(${p.id}, -1)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 flex items-center justify-center font-bold text-slate-600 hover:bg-slate-100 active:scale-95 transition">-</button>
+                        <input type="number" min="0" value="${quantities[p.id]}" onchange="setQty(${p.id}, this.value)" class="w-12 text-center font-bold text-sm bg-white border border-slate-300 rounded-lg py-1 focus:outline-none focus:border-amber-500">
+                        <button onclick="changeQty(${p.id}, 1)" class="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold hover:bg-amber-700 active:scale-95 transition">+</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function changeQty(productId, delta) {
+            const current = quantities[productId] || 0;
+            const updated = Math.max(0, current + delta);
+            quantities[productId] = updated;
+            renderProducts();
+            updateTotals();
+        }
+
+        function setQty(productId, val) {
+            const num = parseInt(val) || 0;
+            quantities[productId] = Math.max(0, num);
+            updateTotals();
+        }
+
+        function updateTotals() {
+            let totalAmount = 0;
+            let totalCount = 0;
+            const summaryContainer = document.getElementById('summaryItems');
+            summaryContainer.innerHTML = '';
+
+            let selectedAny = false;
+
+            PRODUCTS.forEach(p => {
+                const qty = quantities[p.id] || 0;
+                if (qty > 0) {
+                    selectedAny = true;
+                    const itemTotal = qty * p.price;
+                    totalAmount += itemTotal;
+                    totalCount += qty;
+
+                    const row = document.createElement('div');
+                    row.className = "flex justify-between items-center py-1.5";
+                    row.innerHTML = `
+                        <div>
+                            <span class="font-medium text-slate-700">${p.name}</span>
+                            <span class="text-xs text-slate-400 block">${qty} x ${p.price} DH</span>
+                        </div>
+                        <span class="font-bold text-slate-800">${itemTotal} DH</span>
+                    `;
+                    summaryContainer.appendChild(row);
+                }
+            });
+
+            if (!selectedAny) {
+                summaryContainer.innerHTML = `<p class="text-slate-400 text-center py-4 text-xs italic">Aucun produit sélectionné</p>`;
+            }
+
+            document.getElementById('totalItemsCount').innerText = totalCount;
+            document.getElementById('totalAmount').innerText = totalAmount + " DH";
+        }
+
+        function resetCalculator() {
+            PRODUCTS.forEach(p => quantities[p.id] = 0);
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientPhone').value = '';
+            renderProducts();
+            updateTotals();
+        }
+
+        // --- FONCTIONS WHATSAPP INTÉGRÉES ---
+
+        function formatPhoneNumber(phone) {
+            let clean = phone.replace(/\D/g, ''); 
+            if (!clean) return '';
+            
+            if (clean.startsWith('0') && clean.length === 10) {
+                clean = '212' + clean.substring(1);
+            }
+            return clean;
+        }
+
+        function generateWhatsAppUrl(phone, invoiceId, clientName, items, totalAmount, dateStr) {
+            const cleanPhone = formatPhoneNumber(phone);
+            
+            let message = `🍯 *MielQa - Votre Facture* 🍯\n`;
+            if (invoiceId) message += `*N° Facture:* ${invoiceId}\n`;
+            if (dateStr) message += `*Date:* ${dateStr}\n`;
+            if (clientName && clientName !== 'Client de passage') message += `*Client:* ${clientName}\n`;
+            
+            message += `\n*Détail de la commande :*\n`;
+            items.forEach(item => {
+                message += `• ${item.name} x${item.qty} : ${item.total} DH\n`;
+            });
+            
+            message += `\n*Total à payer : ${totalAmount} DH*\n\nMerci de votre confiance ! ✨`;
+
+            const encodedMsg = encodeURIComponent(message);
+            
+            return cleanPhone 
+                ? `https://wa.me/${cleanPhone}?text=${encodedMsg}`
+                : `https://wa.me/?text=${encodedMsg}`;
+        }
+
+        function sendCurrentInvoiceViaWhatsApp() {
+            const totalCount = Object.values(quantities).reduce((a, b) => a + b, 0);
+            if (totalCount === 0) {
+                alert("Veuillez sélectionner au moins un produit.");
+                return;
+            }
+
+            const phone = document.getElementById('clientPhone').value.trim();
+            if (!phone) {
+                alert("Veuillez saisir un numéro de téléphone pour envoyer la facture via WhatsApp.");
+                document.getElementById('clientPhone').focus();
+                return;
+            }
+
+            const items = [];
+            let grandTotal = 0;
+            PRODUCTS.forEach(p => {
+                const qty = quantities[p.id];
+                if (qty > 0) {
+                    const total = qty * p.price;
+                    grandTotal += total;
+                    items.push({ name: p.name, qty, total });
+                }
+            });
+
+            const clientName = document.getElementById('clientName').value.trim() || 'Client';
+            const url = generateWhatsAppUrl(phone, '', clientName, items, grandTotal, new Date().toLocaleDateString('fr-FR'));
+            window.open(url, '_blank');
+        }
+
+        function sendHistoryInvoiceViaWhatsApp(id) {
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const inv = history.find(i => i.id === id);
+            if (!inv) return;
+
+            let phone = inv.clientPhone;
+            if (!phone || phone === '-') {
+                phone = prompt("Entrez le numéro de téléphone WhatsApp du client :");
+                if (!phone) return;
+            }
+
+            const url = generateWhatsAppUrl(phone, inv.id, inv.clientName, inv.items, inv.totalAmount, inv.date);
+            window.open(url, '_blank');
+        }
+
+        // --- GESTION FACTURES ET HISTORIQUE ---
+
+        function saveInvoice() {
+            const totalCount = Object.values(quantities).reduce((a, b) => a + b, 0);
+            if (totalCount === 0) {
+                alert("Veuillez sélectionner au moins un produit avant d'enregistrer la facture.");
+                return;
+            }
+
+            const items = [];
+            let grandTotal = 0;
+
+            PRODUCTS.forEach(p => {
+                const qty = quantities[p.id];
+                if (qty > 0) {
+                    const total = qty * p.price;
+                    grandTotal += total;
+                    items.push({
+                        id: p.id,
+                        name: p.name,
+                        price: p.price,
+                        qty: qty,
+                        total: total
+                    });
+                }
+            });
+
+            const invoice = {
+                id: 'FACT-' + Date.now().toString().slice(-6),
+                date: new Date().toLocaleString('fr-FR'),
+                clientName: document.getElementById('clientName').value.trim() || 'Client de passage',
+                clientPhone: document.getElementById('clientPhone').value.trim() || '-',
+                items: items,
+                totalAmount: grandTotal
+            };
+
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            history.unshift(invoice);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+
+            renderHistory();
+            resetCalculator();
+        }
+
+        // Vider tout l'historique
+        function clearHistory() {
+            if (confirm("Êtes-vous sûr de vouloir tout effacer ? Cette action est irréversible.")) {
+                localStorage.removeItem(STORAGE_KEY);
+                renderHistory();
+            }
+        }
+
+        // Supprimer une facture spécifique
+        function deleteInvoice(id) {
+            if (confirm("Voulez-vous vraiment supprimer cette facture ?")) {
+                let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                history = history.filter(inv => inv.id !== id);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+                renderHistory();
+            }
+        }
+
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const tbody = document.getElementById('historyTableBody');
+            const emptyMsg = document.getElementById('emptyHistoryMsg');
+
+            tbody.innerHTML = '';
+
+            if (history.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                return;
+            } else {
+                emptyMsg.classList.add('hidden');
+            }
+
+            history.forEach(inv => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+
+                const itemsSummary = inv.items.map(i => `${i.qty}x ${i.name}`).join(', ');
+
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-amber-800 text-xs">${inv.id}</td>
+                    <td class="p-3 text-xs text-slate-500 whitespace-nowrap">${inv.date}</td>
+                    <td class="p-3 font-medium text-slate-700">${inv.clientName}</td>
+                    <td class="p-3 text-xs text-slate-600">${inv.clientPhone}</td>
+                    <td class="p-3 text-xs text-slate-600 max-w-xs truncate" title="${itemsSummary}">${itemsSummary}</td>
+                    <td class="p-3 font-bold text-amber-700 whitespace-nowrap">${inv.totalAmount} DH</td>
+                    <td class="p-3 text-right whitespace-nowrap space-x-1">
+                        <button onclick="sendHistoryInvoiceViaWhatsApp('${inv.id}')" class="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-lg text-xs transition" title="Envoyer par WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </button>
+                        <button onclick="viewInvoice('${inv.id}')" class="p-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-xs transition" title="Voir / Imprimer">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function viewInvoice(id) {
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const inv = history.find(i => i.id === id);
+
+            if (!inv) return;
+
+            document.getElementById('modalInvNum').innerText = `Facture #${inv.id}`;
+            document.getElementById('modalInvDate').innerText = inv.date;
+
+            const clientInfoDiv = document.getElementById('modalClientInfo');
+            if (inv.clientName !== 'Client de passage' || inv.clientPhone !== '-') {
+                clientInfoDiv.classList.remove('hidden');
+                document.getElementById('modalClientName').innerText = inv.clientName;
+                document.getElementById('modalClientPhone').innerText = inv.clientPhone;
+            } else {
+                clientInfoDiv.classList.add('hidden');
+            }
+
+            const itemsList = document.getElementById('modalItemsList');
+            itemsList.innerHTML = '';
+
+            inv.items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between py-1 border-b border-dashed border-slate-100";
+                div.innerHTML = `
+                    <span>${item.name}</span>
+                    <span class="font-medium">${item.qty} x ${item.price} DH = <strong>${item.total} DH</strong></span>
+                `;
+                itemsList.appendChild(div);
+            });
+
+            document.getElementById('modalTotalAmount').innerText = inv.totalAmount + " DH";
+
+            document.getElementById('modalWhatsappBtn').setAttribute('onclick', `sendHistoryInvoiceViaWhatsApp('${inv.id}')`);
+
+            document.getElementById('printModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('printModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
